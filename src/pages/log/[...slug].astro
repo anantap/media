@@ -1,0 +1,92 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { ratingDots, formatDate } from '../../lib/utils';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('log', ({ data }) => !data.draft);
+  return entries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const { title, creator, year, date, rating, cover, tags, link, type } = entry.data;
+
+const description = `${title} — ${creator} (${year}). ${entry.body?.slice(0, 140).trim()}`;
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const ogImage = cover ?? undefined;
+---
+
+<Base
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  ogType="article"
+>
+  <a href="/" class="back-link">← Terug naar logboek</a>
+
+  <article>
+    <div class="entry-detail">
+      <!-- Cover -->
+      <div>
+        {cover ? (
+          <img
+            src={cover}
+            alt={`Cover van ${title}`}
+            class="entry-cover"
+            loading="eager"
+          />
+        ) : (
+          <div class="entry-cover-placeholder">
+            <span>{type}</span>
+          </div>
+        )}
+      </div>
+
+      <!-- Info -->
+      <div class="entry-info">
+        <div class="entry-info__type">
+          <a href={`/type/${type}/`} class="type-chip">{type}</a>
+        </div>
+
+        <h1 class="entry-info__title">{title}</h1>
+        <p class="entry-info__creator">{creator}</p>
+
+        <div class="entry-info__meta">
+          <span class="entry-info__year">{year}</span>
+          <span class="entry-info__rating" aria-label={`${rating} van 5`}>
+            {ratingDots(rating)}
+            <span class="entry-info__rating-num">{rating}/5</span>
+          </span>
+        </div>
+
+        {tags.length > 0 && (
+          <div class="entry-tags">
+            {tags.map(tag => (
+              <span class="entry-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+
+        {link && (
+          <a href={link} class="entry-link" target="_blank" rel="noopener noreferrer">
+            Externe link ↗
+          </a>
+        )}
+
+        <time class="entry-info__year" datetime={date.toISOString()}>
+          Gelogd op {formatDate(date)}
+        </time>
+      </div>
+    </div>
+
+    <!-- Tekst -->
+    <div class="prose">
+      <Content />
+    </div>
+  </article>
+</Base>

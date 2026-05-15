@@ -1,0 +1,88 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+}
+
+const { title, description = 'Medialog — films, boeken, albums, games en meer.', ogImage, ogType = 'website' } = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const pageTitle = title === 'Medialog' ? title : `${title} — Medialog`;
+
+const ogImageUrl = ogImage
+  ? (ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`)
+  : `${siteUrl}/og-default.png`;
+
+const types = ['film', 'serie', 'boek', 'album', 'game', 'anders'] as const;
+---
+
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{pageTitle}</title>
+  <meta name="description" content={description} />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content={ogType} />
+  <meta property="og:title" content={pageTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImageUrl} />
+  <meta property="og:url" content={Astro.url.href} />
+  <meta property="og:site_name" content="Medialog" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={pageTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImageUrl} />
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="Medialog RSS" href="/rss.xml" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@1,9..144,100..900,0..100&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <meta name="generator" content={Astro.generator} />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-wrapper">
+      <div class="site-header__inner">
+        <span class="site-title"><a href="/">Medialog</a></span>
+        <nav aria-label="Type-filter">
+          <ul class="site-nav">
+            {types.map(t => (
+              <li>
+                <a href={`/type/${t}/`}>{t}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="site-wrapper">
+      <slot />
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="site-wrapper">
+      <div class="site-footer__inner">
+        <span>Ananta's medialog</span>
+        <a href="/rss.xml">RSS</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { ratingDots, groupByYear } from '../lib/utils';
+
+const allEntries = await getCollection('log', ({ data }) => !data.draft);
+allEntries.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const byYear = groupByYear(allEntries);
+const years = [...byYear.keys()].sort((a, b) => b - a);
+
+const total = allEntries.length;
+---
+
+<Base title="Medialog" description={`${total} entries — films, boeken, albums, games en meer.`}>
+  <div class="page-intro">
+    <h1 class="page-intro__title">Alles</h1>
+    <p class="page-intro__desc">{total} {total === 1 ? 'entry' : 'entries'}</p>
+  </div>
+
+  {years.map(year => {
+    const entries = byYear.get(year)!;
+    return (
+      <section class="year-group">
+        <h2 class="year-heading">{year}</h2>
+        <ul class="entry-list">
+          {entries.map(entry => (
+            <li>
+              <div class="entry-row">
+                <a href={`/type/${entry.data.type}/`} class="type-chip">{entry.data.type}</a>
+                <a href={`/log/${entry.slug}/`} class="entry-row__title">{entry.data.title}</a>
+                <span class="entry-row__meta">{entry.data.creator}</span>
+                <span class="entry-row__year">{entry.data.year}</span>
+                <span class="entry-row__rating" aria-label={`${entry.data.rating} van 5`}>
+                  {ratingDots(entry.data.rating)}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
+  })}
+
+  {allEntries.length === 0 && (
+    <p class="empty-state">Nog geen entries. Gebruik <code>npm run new</code> om te beginnen.</p>
+  )}
+</Base>
