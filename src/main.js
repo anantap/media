@@ -26,6 +26,8 @@ const promptBtn = document.getElementById("promptBtn");
 const feed = document.getElementById("feed");
 const emptyState = document.getElementById("emptyState");
 
+let posts = [];
+
 async function fetchPosts() {
   try {
     const res = await fetch(API_URL);
@@ -52,7 +54,7 @@ function relativeTime(timestamp) {
   });
 }
 
-function renderPosts(posts) {
+function render() {
   const sorted = [...posts].sort((a, b) => b.createdAt - a.createdAt);
 
   emptyState.hidden = sorted.length > 0;
@@ -90,13 +92,14 @@ function renderPosts(posts) {
 }
 
 async function loadAndRender() {
-  const posts = await fetchPosts();
-  renderPosts(posts);
+  posts = await fetchPosts();
+  render();
 }
 
 async function deletePost(id) {
+  posts = posts.filter((p) => p.id !== id);
+  render();
   await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { method: "DELETE" });
-  await loadAndRender();
 }
 
 function updateComposerState() {
@@ -111,15 +114,19 @@ async function submitPost() {
   if (!text || text.length > CHAR_LIMIT) return;
 
   postBtn.disabled = true;
-  await fetch(API_URL, {
+  composeInput.value = "";
+  updateComposerState();
+
+  const res = await fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),
   });
 
-  composeInput.value = "";
-  updateComposerState();
-  await loadAndRender();
+  if (res.ok) {
+    posts.push(await res.json());
+    render();
+  }
 }
 
 function insertPrompt() {
