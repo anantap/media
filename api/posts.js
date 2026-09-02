@@ -6,7 +6,8 @@ const BLOB_PATH = "strangelog-posts.json";
 async function readPosts() {
   try {
     const meta = await head(BLOB_PATH);
-    const res = await fetch(meta.url, { cache: "no-store" });
+    const cacheBustedUrl = `${meta.url}?v=${meta.uploadedAt.getTime()}`;
+    const res = await fetch(cacheBustedUrl, { cache: "no-store" });
     if (!res.ok) return [];
     return await res.json();
   } catch (err) {
