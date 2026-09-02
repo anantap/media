@@ -1,33 +1,23 @@
-import { put, head, BlobNotFoundError } from "@vercel/blob";
+import { Redis } from "@upstash/redis";
 
 const CHAR_LIMIT = 280;
-const BLOB_PATH = "strangelog-posts.json";
+const POSTS_KEY = "strangelog:posts";
 
-async function readPosts() {
-  try {
-    const meta = await head(BLOB_PATH);
-    const cacheBustedUrl = `${meta.url}?v=${meta.uploadedAt.getTime()}`;
-    const res = await fetch(cacheBustedUrl, { cache: "no-store" });
-    if (!res.ok) return [];
-    return await res.json();
-  } catch (err) {
-    if (err instanceof BlobNotFoundError) return [];
-    throw err;
-  }
+const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+if (!redisUrl || !redisToken) {
+  throw new Error(
+    "Missing Redis credentials: connect an Upstash Redis store to this project (Storage tab → Create Database → Upstash Redis)."
+  );
 }
 
-async function writePosts(posts) {
-  await put(BLOB_PATH, JSON.stringify(posts), {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: "application/json",
-  });
-}
+const redis = new Redis({ url: redisUrl, token: redisToken });
 
 export default async function handler(req, res) {
   if (req.method === "GET") {
-    const posts = await readPosts();
+    const all = await redis.hgetall(POSTS_KEY);
+    const posts = all ? Object.entries(all).map(([id, value]) => ({ id, ...value })) : [];
     res.status(200).json(posts);
     return;
   }
@@ -38,10 +28,8 @@ export default async function handler(req, res) {
       res.status(400).json({ error: "invalid post" });
       return;
     }
-    const posts = await readPosts();
     const post = { id: crypto.randomUUID(), text, createdAt: Date.now() };
-    posts.push(post);
-    await writePosts(posts);
+    await redis.hset(POSTS_KEY, { [post.id]: { text: post.text, createdAt: post.createdAt } });
     res.status(201).json(post);
     return;
   }
@@ -52,8 +40,7 @@ export default async function handler(req, res) {
       res.status(400).json({ error: "missing id" });
       return;
     }
-    const posts = await readPosts();
-    await writePosts(posts.filter((p) => p.id !== id));
+    await redis.hdel(POSTS_KEY, id);
     res.status(200).json({ ok: true });
     return;
   }
