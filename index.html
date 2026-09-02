@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>strangelog</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <h1>strangelog</h1>
+      </header>
+
+      <section class="composer">
+        <textarea
+          id="composeInput"
+          maxlength="280"
+          placeholder="what's happening in there"
+          rows="3"
+        ></textarea>
+        <div class="composer-footer">
+          <button id="promptBtn" type="button" class="ghost-btn">prompt me</button>
+          <span id="charCount" class="char-count">0/280</span>
+          <button id="postBtn" type="button" class="post-btn" disabled>post</button>
+        </div>
+      </section>
+
+      <main id="feed" class="feed"></main>
+
+      <p id="emptyState" class="empty-state" hidden>
+        nothing here yet. say something unhinged.
+      </p>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

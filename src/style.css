@@ -1,0 +1,182 @@
+:root {
+  --bg: #000000;
+  --bg-raised: #16181c;
+  --border: #2f3336;
+  --text: #e7e9ea;
+  --text-dim: #71767b;
+  --accent: #1d9bf0;
+  --danger: #f4212e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+#app {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.composer {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px 10px;
+}
+
+.composer textarea {
+  width: 100%;
+  resize: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-size: 1.05rem;
+  font-family: inherit;
+  line-height: 1.4;
+  padding: 8px 0;
+}
+
+.composer textarea::placeholder {
+  color: var(--text-dim);
+}
+
+.composer-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.char-count {
+  margin-left: auto;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.char-count.over {
+  color: var(--danger);
+  font-weight: 700;
+}
+
+.ghost-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.ghost-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.post-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 9999px;
+  padding: 7px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.post-btn:disabled {
+  background: #0f4a6e;
+  color: #7d99a6;
+  cursor: not-allowed;
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+}
+
+.post {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 1rem;
+  line-height: 1.4;
+}
+
+.post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.post-time {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+.delete-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.delete-btn:hover {
+  color: var(--danger);
+  background: rgba(244, 33, 46, 0.1);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-dim);
+  padding: 40px 16px;
+}
+
+@media (max-width: 480px) {
+  .topbar h1 {
+    font-size: 1.1rem;
+  }
+
+  .composer textarea {
+    font-size: 1rem;
+  }
+}
