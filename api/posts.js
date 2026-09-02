@@ -1,4 +1,4 @@
-import { put, head } from "@vercel/blob";
+import { put, head, BlobNotFoundError } from "@vercel/blob";
 
 const CHAR_LIMIT = 280;
 const BLOB_PATH = "strangelog-posts.json";
@@ -10,7 +10,7 @@ async function readPosts() {
     if (!res.ok) return [];
     return await res.json();
   } catch (err) {
-    if (err?.name === "BlobNotFoundError") return [];
+    if (err instanceof BlobNotFoundError) return [];
     throw err;
   }
 }
