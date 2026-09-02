@@ -1,5 +1,5 @@
-const STORAGE_KEY = "strangelog_posts";
 const CHAR_LIMIT = 280;
+const API_URL = "/api/posts";
 
 const PROMPTS = [
   "an appliance that has started giving you advice",
@@ -26,17 +26,14 @@ const promptBtn = document.getElementById("promptBtn");
 const feed = document.getElementById("feed");
 const emptyState = document.getElementById("emptyState");
 
-function loadPosts() {
+async function fetchPosts() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    const res = await fetch(API_URL);
+    if (!res.ok) return [];
+    return await res.json();
   } catch {
     return [];
   }
-}
-
-function savePosts(posts) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
 }
 
 function relativeTime(timestamp) {
@@ -55,13 +52,13 @@ function relativeTime(timestamp) {
   });
 }
 
-function renderFeed() {
-  const posts = loadPosts().sort((a, b) => b.createdAt - a.createdAt);
+function renderPosts(posts) {
+  const sorted = [...posts].sort((a, b) => b.createdAt - a.createdAt);
 
-  emptyState.hidden = posts.length > 0;
+  emptyState.hidden = sorted.length > 0;
   feed.innerHTML = "";
 
-  for (const post of posts) {
+  for (const post of sorted) {
     const el = document.createElement("article");
     el.className = "post";
     el.dataset.id = post.id;
@@ -92,10 +89,14 @@ function renderFeed() {
   }
 }
 
-function deletePost(id) {
-  const posts = loadPosts().filter((p) => p.id !== id);
-  savePosts(posts);
-  renderFeed();
+async function loadAndRender() {
+  const posts = await fetchPosts();
+  renderPosts(posts);
+}
+
+async function deletePost(id) {
+  await fetch(`${API_URL}?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+  await loadAndRender();
 }
 
 function updateComposerState() {
@@ -105,21 +106,20 @@ function updateComposerState() {
   postBtn.disabled = length === 0 || length > CHAR_LIMIT || composeInput.value.trim().length === 0;
 }
 
-function submitPost() {
+async function submitPost() {
   const text = composeInput.value.trim();
   if (!text || text.length > CHAR_LIMIT) return;
 
-  const posts = loadPosts();
-  posts.push({
-    id: crypto.randomUUID(),
-    text,
-    createdAt: Date.now(),
+  postBtn.disabled = true;
+  await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
   });
-  savePosts(posts);
 
   composeInput.value = "";
   updateComposerState();
-  renderFeed();
+  await loadAndRender();
 }
 
 function insertPrompt() {
@@ -141,5 +141,5 @@ postBtn.addEventListener("click", submitPost);
 promptBtn.addEventListener("click", insertPrompt);
 
 updateComposerState();
-renderFeed();
+loadAndRender();
 setInterval(tickTimestamps, 30000);
